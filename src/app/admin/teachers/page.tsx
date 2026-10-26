@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { requireAdminActor } from '@/server/dal/actor';
 import { loadTeacherAdminData } from '@/app/actions/teachers';
 import { TeacherTable, CreateTeacherForm } from './client';
+import { ChangePasswordPanel, SignOutButton } from '../../teacher/panels';
 
 export const metadata = { title: 'Teacher accounts' };
 export const dynamic = 'force-dynamic';
@@ -97,6 +98,22 @@ export default async function AdminTeachersPage({
           />
         </aside>
       </div>
+
+      <section className="mt-6 rounded-lg border border-slate-200 bg-white p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-base font-semibold text-navy">Your account</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Change the password for this administrator account. Other administrators are managed the
+              same way, one at a time.
+            </p>
+          </div>
+          <SignOutButton />
+        </div>
+        <div className="mt-4 max-w-md">
+          <ChangePasswordPanel />
+        </div>
+      </section>
     </main>
   );
 }
