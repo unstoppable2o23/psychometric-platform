@@ -27,11 +27,18 @@ import { appUrl } from '../env';
 
 const baseUrl = (): string => appUrl();
 
-/** Known password for the one seeded teacher who has already activated. */
-export const DEV_TEACHER_PASSWORD = 'Greenfield#2026';
+function seedPassword(envName: string, devDefault: string): string {
+  const fromEnv = process.env[envName];
+  if (fromEnv && fromEnv.length >= 12) return fromEnv;
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(`${envName} must be set (>= 12 chars) when seeding a production database.`);
+  }
+  return devDefault;
+}
+export const DEV_TEACHER_PASSWORD = seedPassword('SEED_TEACHER_PASSWORD', 'Greenfield#2026');
 
-/** Known password for the seeded super admin, who manages teacher access. */
-export const DEV_ADMIN_PASSWORD = 'Beacon#Admin2026';
+/** Password for the seeded super admin, who manages teacher access. */
+export const DEV_ADMIN_PASSWORD = seedPassword('SEED_ADMIN_PASSWORD', 'Beacon#Admin2026');
 
 /** Deterministic UUID so re-seeding does not orphan stored response values. */
 function stableUuid(seed: string): string {
