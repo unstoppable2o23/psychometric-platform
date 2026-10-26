@@ -43,13 +43,22 @@ async function pendingFiles(): Promise<string[]> {
 }
 
 async function applyAuthShim(db: Db): Promise<void> {
-  // Supabase already provides auth.users; only stand it up locally.
-  if (!usesLocalDatabase) return;
+  // Apply the stand-in auth.users table whenever the provider does not supply
+  // one (PGlite, Neon, Vercel Postgres, ...). On Supabase auth.users already
+  // exists and is owned by GoTrue, so we leave it untouched there.
+  const { rows } = await db.query<{ present: boolean }>(
+    `select exists (
+       select 1 from information_schema.tables
+        where table_schema = 'auth' and table_name = 'users'
+     ) as present`,
+  );
+  if (rows[0]?.present) return;
+
   if (!existsSync(AUTH_SHIM)) {
-    throw new Error(`Missing local auth shim at ${AUTH_SHIM}`);
+    throw new Error(`Missing auth shim at ${AUTH_SHIM}`);
   }
   await db.exec(await readFile(AUTH_SHIM, 'utf8'));
-  process.stdout.write('  auth shim applied (local dev only)\n');
+  process.stdout.write('  auth shim applied (no auth.users found)\n');
 }
 
 export async function migrate(opts: { reset?: boolean } = {}): Promise<void> {
